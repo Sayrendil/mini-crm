@@ -72,12 +72,47 @@
         const btn = document.getElementById('submit-btn');
         const msgBox = document.getElementById('response-msg');
 
-        // 🌐 Получение параметров (white-label / project_id)
         const params = new URLSearchParams(window.location.search);
         const projectId = params.get('project_id');
 
+        // 🔹 Очистка ошибок
+        function clearErrors() {
+            document.querySelectorAll('.input').forEach(el => {
+                el.classList.remove('input-error');
+            });
+
+            document.querySelectorAll('.error-text').forEach(el => el.remove());
+        }
+
+        // 🔹 Показ ошибок
+        function showErrors(errors) {
+            Object.entries(errors).forEach(([field, messages]) => {
+                const input = form.querySelector(`[name="${field}"]`);
+                if (!input) return;
+
+                input.classList.add('input-error');
+
+                const error = document.createElement('div');
+                error.className = 'error-text';
+                error.innerText = messages[0];
+
+                input.parentNode.appendChild(error);
+            });
+        }
+
+        // 🔹 Очистка ошибки при вводе
+        form.querySelectorAll('.input').forEach(input => {
+            input.addEventListener('input', () => {
+                input.classList.remove('input-error');
+                const err = input.parentNode.querySelector('.error-text');
+                if (err) err.remove();
+            });
+        });
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            clearErrors();
 
             const formData = new FormData(form);
 
@@ -101,21 +136,31 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    msgBox.innerText = 'Заявка отправлена';
-                    msgBox.className = 'msg success';
-                    form.reset();
+                    form.innerHTML = `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:18px; margin-bottom:10px;">✅</div>
+                    <div style="font-weight:500;">Заявка отправлена</div>
+                    <div style="font-size:13px; color:#6b7280; margin-top:5px;">
+                        Мы свяжемся с вами
+                    </div>
+                </div>
+            `;
                 } else {
-                    const errors = result.errors ? Object.values(result.errors).flat().join(' ') : '';
-                    msgBox.innerText = errors || 'Ошибка';
+                    if (result.errors) {
+                        showErrors(result.errors);
+                    }
+
+                    msgBox.innerText = result.message || 'Ошибка отправки';
                     msgBox.className = 'msg error';
+                    msgBox.style.display = 'block';
                 }
 
             } catch (e) {
                 msgBox.innerText = 'Ошибка сети';
                 msgBox.className = 'msg error';
+                msgBox.style.display = 'block';
             }
 
-            msgBox.style.display = 'block';
             btn.disabled = false;
             btn.innerText = 'Отправить';
         });
