@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Api\TicketController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 
 
-// Группа для работы с заявками
-Route::post('/tickets', [TicketController::class, 'store']);
-Route::get('/tickets/statistics', [TicketController::class, 'statistics']);
+Route::post('/tickets/store', [TicketController::class, 'store']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/tickets/statistics', [AdminTicketController::class, 'statistics']); // статистика
+});
