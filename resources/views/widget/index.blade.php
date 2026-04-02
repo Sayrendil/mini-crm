@@ -125,7 +125,7 @@
             msgBox.style.display = 'none';
 
             try {
-                const response = await fetch('/api/tickets', {
+                const response = await fetch('/api/tickets/store', {
                     method: 'POST',
                     body: formData,
                     headers: {
